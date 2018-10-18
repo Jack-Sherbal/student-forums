@@ -8,6 +8,9 @@ class Feed extends Component {
   };
 
   async componentDidMount() {
+    const test = (await axios.get("http://localhost:4000/")).data;
+    console.log(test);
+
     const posts = [
       {
         user: "Jack",

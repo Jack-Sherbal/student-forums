@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import "./App.css";
-// import Rating from "./Components/rating";
+import Rating from "./Components/rating";
 import NavBar from "./Components/navbar";
 import Feed from "./Components/feed";
 import Post from "./Components/post";
@@ -15,7 +15,7 @@ class App extends Component {
         <Route exact path="/post/:postId" component={Post} />
         {/* <p>WIP</p> */}
         {/* <Feed /> */}
-        {/* <Rating /> */}
+        <Rating />
       </div>
     );
   }

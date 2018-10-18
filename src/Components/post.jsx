@@ -12,6 +12,10 @@ class Post extends Component {
       comments: ["This is cool", "Nah this is trash dude", "oh...."],
       id: 1
     };
+
+    // const post = await axios.get(`http://localhost:4000`).data;
+    // console.log(post);
+
     this.setState({
       post: post
     });
