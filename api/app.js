@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const mongo = require("mongodb");
 const bcrypt = require("bcrypt");
 const session = require("express-session");
+const MongoStore = require("connect-mongo")(session);
 const Schema = mongoose.Schema;
 const bodyParser = require("body-parser");
 const User = require("../api/models/user");
@@ -25,15 +26,30 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // );
 
 // const UserModel = mongoose.model("User", User);
-const db = mongoose.connect("mongodb://localhost:27017/test");
+mongoose.connect("mongodb://localhost:27017/test");
+
+const db = mongoose.connection;
 
 app.use(
   session({
     secret: "verysecuresecret",
     resave: true,
-    saveUninitialized: false
+    saveUninitialized: false,
+    store: new MongoStore({
+      mongooseConnection: db
+    })
   })
 );
+
+function requiresLogin(req, res, next) {
+  if (req.session && req.session.userId) {
+    return next();
+  } else {
+    var err = new Error("You must be logged in to view this page");
+    err.status = 401;
+    return next(err);
+  }
+}
 
 app.post("/register", function(req, res, next) {
   //make sure all fields are filled out
@@ -56,7 +72,6 @@ app.post("/register", function(req, res, next) {
     var plainPass = req.body.password;
     //   var plainPassConf = req.body.confPassword;
     const salt = bcrypt.genSalt(saltRounds);
-    console.log(plainPass);
     const hashPass = bcrypt.hashSync(plainPass, 10);
     //   const hashConfPass = bcrypt.hashSync(plainPassConf, salt);
 
@@ -133,7 +148,7 @@ app.post("/login", function(req, res, next) {
 //   //   });
 // });
 
-app.get("/", function(req, res) {
+app.get("/feed", requiresLogin, function(req, res) {
   User.find({}, function(err, result) {
     if (err) throw err;
 
