@@ -17,6 +17,10 @@ var UserSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true
+  },
+  confPassword: {
+    type: String,
+    required: true
   }
 });
 
