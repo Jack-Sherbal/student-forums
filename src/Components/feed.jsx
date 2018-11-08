@@ -8,7 +8,7 @@ class Feed extends Component {
   };
 
   async componentDidMount() {
-    const test = (await axios.get("http://localhost:4000/")).data;
+    const test = (await axios.get("http://localhost:4000/feed")).data;
     console.log(test);
 
     const posts = [

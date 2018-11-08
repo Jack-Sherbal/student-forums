@@ -35,6 +35,7 @@ app.use(
     secret: "verysecuresecret",
     resave: true,
     saveUninitialized: false,
+    name: "test-ses",
     store: new MongoStore({
       mongooseConnection: db
     })
@@ -42,7 +43,8 @@ app.use(
 );
 
 function requiresLogin(req, res, next) {
-  if (req.session && req.session.userId) {
+  console.log(req.sessionID);
+  if (req.session && req.sessionID) {
     return next();
   } else {
     var err = new Error("You must be logged in to view this page");
@@ -87,7 +89,7 @@ app.post("/register", function(req, res, next) {
         return next(error);
       } else {
         req.session.userId = user._id;
-        return res.redirect("/");
+        return res.redirect("http://localhost:3000/feed");
       }
     });
   } else {
@@ -113,6 +115,20 @@ app.post("/login", function(req, res, next) {
     var err = new Error("Must provide email and password");
     err.status = 401;
     return next(err);
+  }
+});
+
+app.get("/logout", function(req, res, next) {
+  if (req.session) {
+    req.session.destroy(function(err) {
+      if (err) {
+        console.log("got1");
+        return next(err);
+      } else {
+        console.log("got2");
+        return res.redirect("http://localhost:3000/");
+      }
+    });
   }
 });
 
