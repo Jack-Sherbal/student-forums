@@ -15,6 +15,7 @@ class App extends Component {
         <NavBar />
         <Route exact path="/" component={Login} />
         <Route exact path="/register" component={Register} />
+        <Route exact path="/feed" component={Feed} />
         <Route exact path="/post/:postId" component={Post} />
         {/* <p>WIP</p> */}
         {/* <Feed /> */}

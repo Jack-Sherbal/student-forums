@@ -5,7 +5,11 @@ class Login extends Component {
   render() {
     return (
       <div className="text-center">
-        <form className="form-signin">
+        <form
+          className="form-signin"
+          action="http://localhost:4000/login"
+          method="post"
+        >
           <h1 className="h3 mb-3 font-weight-normal">Sign in</h1>
           <label htmlFor="inputEmail" className="sr-only">
             Email Address
@@ -15,6 +19,7 @@ class Login extends Component {
             id="inputEmail"
             placeholder="Email Address"
             className="form-control"
+            name="email"
             required
             autoFocus
           />
@@ -26,6 +31,7 @@ class Login extends Component {
             className="form-control"
             id="inputPassword"
             placeholder="Password"
+            name="password"
             required
           />
           <span className="small">
