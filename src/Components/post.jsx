@@ -38,6 +38,32 @@ class Post extends Component {
                 {comment}
               </p>
             ))}
+            <hr className="my-4" />
+            <div className="row">
+              <form
+                className="col-lg-12"
+                action="http://localhost:4000/comments"
+                method="post"
+              >
+                <div>
+                  <h2>Post Comment:</h2>
+                  <textarea
+                    className="form-control col-lg-8"
+                    id="comment-input"
+                    name="comment"
+                    rows="7"
+                  />
+                  <div>
+                    <button
+                      className="btn btn-md btn-primary col-sm-2"
+                      type="submit"
+                    >
+                      Post
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>

@@ -28,6 +28,16 @@ class Feed extends Component {
     return (
       <div className="container">
         <div className="row">
+          <div className="col-md-11" />
+          <a
+            href="/post"
+            className="col-md-1 btn btn-lg btn-primary btn-block"
+            title="New Post"
+          >
+            +
+          </a>
+        </div>
+        <div className="row">
           {this.state.posts === null && <p>Loading Posts....</p>}
           {this.state.posts &&
             this.state.posts.map(post => (
