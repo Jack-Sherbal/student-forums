@@ -1,7 +1,7 @@
 var mongoose = require("mongoose");
 var bcrypt = require("bcrypt");
 
-var UserSchema = new mongoose.Schema({
+var UserSchema = new mongoose.Schema({ 
   email: {
     type: String,
     unique: true,
@@ -22,7 +22,7 @@ var UserSchema = new mongoose.Schema({
   //     type: String,
   //     required: true
   //   }
-});
+}); 
 
 UserSchema.statics.authenticate = function(email, password, callback) {
   User.findOne({ email: email }).exec(function(err, user) {
@@ -44,5 +44,5 @@ UserSchema.statics.authenticate = function(email, password, callback) {
   });
 };
 
-var User = mongoose.model("User", UserSchema);
-module.exports = User;
+var User = mongoose.model("User", UserSchema); //here
+module.exports = User; //here
