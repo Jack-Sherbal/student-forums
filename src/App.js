@@ -5,6 +5,7 @@ import NavBar from "./Components/navbar";
 import Feed from "./Components/feed";
 import Post from "./Components/post";
 import Login from "./Components/login";
+import NewPost from "./Components/new_post";
 import Register from "./Components/register";
 import { Route } from "react-router-dom";
 
@@ -17,6 +18,7 @@ class App extends Component {
         <Route exact path="/" component={Login} />
         <Route exact path="/register" component={Register} />
         <Route exact path="/feed" component={Feed} />
+        <Route exact path="/post" component={NewPost} />
         <Route exact path="/post/:postId" component={Post} />
         {/* <p>WIP</p> */}
         {/* <Feed /> */}
