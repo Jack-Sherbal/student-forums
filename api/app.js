@@ -8,52 +8,66 @@ const session = require("express-session");
 const MongoStore = require("connect-mongo")(session);
 const Schema = mongoose.Schema;
 const bodyParser = require("body-parser");
+const cookieParser = require('cookie-parser');
 const User = require("../api/models/user");
+const Post = require("../api/models/post");
 
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
 
-// const userSchema = new Schema(
-//   {
-//     username: String,
-//     email: String,
-//     password: String
-//   },
-//   {
-//     collection: "Users"
-//   }
-// );
-
-// const UserModel = mongoose.model("User", User);
 mongoose.connect("mongodb://localhost:27017/test");
 
 const db = mongoose.connection;
 
 app.use(
   session({
+    name: "user_sid",
     secret: "verysecuresecret",
-    resave: true,
+    resave: false,
     saveUninitialized: false,
-    name: "test-ses",
-    store: new MongoStore({
-      mongooseConnection: db
-    })
+    cookie: {
+      expires: 600000
+    }
   })
 );
 
-function requiresLogin(req, res, next) {
-  console.log(req.sessionID);
-  if (req.session && req.sessionID) {
-    return next();
+app.use((req, res, next) => {
+  if(req.cookies.user_sid && !req.session.user) {
+    res.clearCookie("user_sid");
+  }
+  next();
+});
+
+var sessionChecker = (req, res, next) => {
+  if(req.session.user && req.cookies.user_sid) {
+    res.redirect('/feed');
   } else {
-    var err = new Error("You must be logged in to view this page");
-    err.status = 401;
-    return next(err);
+    next();
   }
 }
 
-app.post("/register", function(req, res, next) {
+app.get("/", sessionChecker, (req, res) => {
+  res.redirect("/login")
+});
+
+// function requiresLogin(req, res, next) {
+//   console.log(req.sessionID);
+//   if (req.session && req.sessionID) {
+//     return next();
+//   } else {
+//     var err = new Error("You must be logged in to view this page");
+//     err.status = 401;
+//     return next(err);
+//   }
+// }
+
+app.route("/register")
+  .get(sessionChecker, (req, res) => {
+    res.redirect("http://localhost:3000/register")
+  })  //"/register",
+  .post((req, res, next) => {
   //make sure all fields are filled out
 
   if (
@@ -84,13 +98,18 @@ app.post("/register", function(req, res, next) {
       // confPassword: hashConfPass
     };
 
-    User.create(userData, function(error, user) {
-      if (error) {
-        return next(error);
-      } else {
-        req.session.userId = user._id;
-        return res.redirect("http://localhost:3000/feed");
-      }
+    //LOOK AT ME
+    User.create(userData
+      // if (error) {
+      //   return next(error);
+      // } else {
+      //   req.session.userId = user._id;
+      //   return res.redirect("http://localhost:3000/feed");
+      // }
+    )
+    .then(user => {
+      req.session.user = "user1";
+      res.redirect("http://localhost:3000/feed");
     });
   } else {
     var err = new Error("All fields are required.");
@@ -99,7 +118,10 @@ app.post("/register", function(req, res, next) {
   }
 });
 
-app.post("/login", function(req, res, next) {
+app.route("/login").get(sessionChecker, (req, res) => {
+  res.redirect("http://localhost:3000/login");
+})
+.post((req, res, next) => {
   if (req.body.email && req.body.password) {
     User.authenticate(req.body.email, req.body.password, function(error, user) {
       if (error || !user) {
@@ -107,7 +129,7 @@ app.post("/login", function(req, res, next) {
         err.status = 401;
         return next(err);
       } else {
-        req.session.userId = user._id;
+        req.session.user = "User1"; //user.dataValues;
         return res.redirect("http://localhost:3000/feed");
       }
     });
@@ -132,50 +154,120 @@ app.get("/logout", function(req, res, next) {
   }
 });
 
-// app.get("/register", function(req, res) {
-//   const userData = {
-//     username: "Joe",
-//     email: "joe@gmail.com",
-//     password: "password",
-//     confPassword: "password"
-//   };
+app.get("/remove_post", function(req, res) {
+  const query = (req.get('referer')).split('?');
+  const pid = query[1].split('=')[1];
 
-//   User.create(userData, function(error, user) {
-//     if (error) {
-//       console.log(error);
-//       //   return next(error);
-//     } else {
-//       //   req.session.userId = user._id;
-//       return res.redirect("/");
-//     }
-//   });
+  Post.findOneAndRemove({_id: pid}, function(err, result) {
+    if(err) throw err;
 
-//   //   const saveData = new UserModel({
-//   //     username: "Joe",
-//   //     email: "joe@gmail.com",
-//   //     password: "password",
-//   //     confPassword: "password"
-//   //   }).save(function(err, result) {
-//   //     if (err) throw err;
+    res.redirect("http://localhost:3000/feed");
+  });
+});
 
-//   //     if (result) {
-//   //       res.json(result);
-//   //     }
-//   //   });
-// });
+app.get("/feed", function(req, res) {
 
-app.get("/feed", requiresLogin, function(req, res) {
-  User.find({}, function(err, result) {
-    if (err) throw err;
+  console.log(req.session.user);
+  console.log(req.cookies);
+  if(!req.session.user && !req.cookies.user_sid) {
+    Post.find({}, function(err, result) {
+      if (err) throw err;
+  
+      if (result) {
+        res.json(result);
+      } else {
+        res.send(JSON.stringify({ error: "error" }));
+      }
+    });
+  } else {
+    res.redirect("http://localhost:3000/login");
+  }
+});
 
-    if (result) {
-      res.json(result);
+app.listen(4000, function() {
+  console.log("express app listening on port 4000");
+});
+
+app.post("/post", function(req, res, next) {
+
+  const postData = {
+    user: 'Jack',
+    title: req.body.title,
+    content: req.body.content,
+    comments: []
+  }  
+  Post.create(postData, function(error, post) {
+    if (error) {
+      return next(error);
+    } else {
+      return res.redirect("http://localhost:3000/feed");
+    }
+  });
+
+});
+
+app.get("/posts", function(req, res) {
+  const url = require('url');
+  const query = url.parse(req.url, true).query;
+
+  Post.find({_id: query.pid}, function(error, post) {
+    if(error) throw error;
+
+    if(post) {
+      res.json(post)
     } else {
       res.send(JSON.stringify({ error: "error" }));
     }
   });
 });
 
-app.listen(4000, function() {
-  console.log("express app listening on port 4000");
+app.post("/comment", function(req, res, next) {
+  // console.log("comment got");
+    const url = require('url');
+    console.log(req.get('referer'));
+    const query = (req.get('referer')).split('?');
+    const pid = query[1].split('=')[1];
+
+
+    console.log(pid);
+    Post.findOneAndUpdate({_id: pid},
+      {$push: {comments: req.body.comment}},
+      function(err, doc) {
+        console.log(doc);
+          if(err){
+          console.log(err);
+          }else{
+           res.redirect(req.get("referer"));
+          }
+      }
+    );
+
+    // Post.find({_id: query.pid}, function(err, post) {
+    //   if(!post) {
+    //     return next(new Error("Error"));
+    //   } else {
+    //     console.log(post);
+    //     post.comments = ["testing"];
+
+    //     post.save(function(err) {
+    //       if(err) {
+    //         throw err;
+    //       } else {
+    //         console.log("success");
+    //         res.redirect(req.get("referer"));
+    //       }
+    //     })
+    //   }
+    // });
+
+    // Post.findOneAndUpdate({_id: query.pid},
+    //   {$push: {comments: req.body.comment}, 
+    //   function (err, result) {
+    //     if(error) return next(error);
+
+    //     if(result) {
+    //       return res.redirect(req.get('referer'));
+    //     }
+    //   }
+    // });
 });

@@ -6,7 +6,7 @@ class NavBar extends Component {
   state = {};
 
   logout() {
-    axios.get("http://localhost:4000/logout");
+    window.location.href = "/login";
   }
 
   render() {
@@ -14,7 +14,7 @@ class NavBar extends Component {
       <div>
         <nav className="navbar navbar-dark bg-primary fixed-top">
           <Link className="navbar-brand" to="/">
-            Student Forums
+            Forums
           </Link>
           <button className="pull-right" onClick={this.logout}>
             Log out

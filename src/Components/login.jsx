@@ -1,7 +1,20 @@
 import React, { Component } from "react";
 
 class Login extends Component {
-  state = {};
+  state = {
+    email: ""
+  };
+
+  updateEmail = (e) => {
+    console.log(e.target.value);
+    this.setState({email: e.target.value})
+  }
+
+  setCookie = (e) => {
+    const email =this.state.email;
+    document.cookie = "email=" + email;
+  }
+
   render() {
     return (
       <div className="text-center">
@@ -20,6 +33,7 @@ class Login extends Component {
             </label>
             <input
               type="email"
+              onChange={this.updateEmail}
               id="inputEmail"
               placeholder="Email Address"
               className="form-control col-md-2"
@@ -48,6 +62,7 @@ class Login extends Component {
           <div className="row">
             <div className="col-md-6" />
             <button
+              onClick={this.setCookie}
               className="btn btn-lg btn-primary btn-block col-md-1 mt-3"
               type="submit"
             >
